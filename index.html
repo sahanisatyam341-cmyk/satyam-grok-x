@@ -61,13 +61,15 @@ async function speakXai(clean){
 }
 function speak(t){
  const clean=t.replace(/[\u{1F000}-\u{1FFFF}*#_`]/gu,'');
- if(!S.vo)return;
- if(S.xk){speakXai(clean).catch(()=>speakNative(clean));return}
+ if(!S.vo){showToast('Awaaz OFF hai (Settings me ON karo)');return}
+ const NTTS=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.TextToSpeech;
+ showToast('Awaaz: '+(S.xk?'Grok':NTTS?'phone (native)':'web'));
+ if(S.xk){speakXai(clean).catch(e=>{showToast('Grok error: '+e.message);speakNative(clean)});return}
  speakNative(clean)}
 function speakNative(clean){
  const NTTS=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.TextToSpeech;
  if(NTTS){orb('talk');NTTS.speak({text:clean,lang:'hi-IN',rate:1.0,pitch:1.0,volume:1.0,category:'ambient'}).catch(()=>{}).finally(()=>orb(hf?'listen':''));return}
- if(!window.speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(clean);u.lang='hi-IN';const v=speechSynthesis.getVoices().find(v=>/hi|en-IN/i.test(v.lang));if(v)u.voice=v;u.onstart=()=>orb('talk');u.onend=()=>orb(hf?'listen':'');speechSynthesis.speak(u)}
+ if(!window.speechSynthesis){showToast('Phone me awaaz plugin nahi mila');return}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(clean);u.lang='hi-IN';const v=speechSynthesis.getVoices().find(v=>/hi|en-IN/i.test(v.lang));if(v)u.voice=v;u.onstart=()=>orb('talk');u.onend=()=>orb(hf?'listen':'');speechSynthesis.speak(u)}
 /* local commands */
 const APPS={youtube:'https://m.youtube.com',whatsapp:'https://wa.me/',maps:'https://maps.google.com',gmail:'https://mail.google.com',google:'https://google.com',instagram:'https://instagram.com'};
 const wx=c=>c===0?'saaf aasman':c<3?'halke badal':c===3?'badal chhaye':c<50?'kohra':c<70?'baarish':c<80?'baraf':c<90?'bauchhar':'toofan';
@@ -120,4 +122,4 @@ $('sv').onclick=()=>{[['key','key'],['model','model'],['ep','ep'],['nm','nm'],['
 $('mx').onclick=()=>{S.mem=[];save();cnt()};$('cx').onclick=()=>{S.chat=[];save();$('feed').innerHTML=''};
 if('serviceWorker'in navigator&&0)0;
 </script></body></html>
-  
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  

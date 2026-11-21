@@ -1,0 +1,13 @@
+{
+  "name": "jarvis-x-v2",
+  "version": "5.0.0",
+  "private": true,
+  "scripts": {
+    "postinstall": "mkdir -p www && cp index.html www/index.html"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/cli": "^6.2.0",
+    "@capacitor/core": "^6.2.0"
+  }
+}

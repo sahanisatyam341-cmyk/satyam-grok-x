@@ -11,13 +11,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm install
-      - run: npx cap init JarvisX com.satyam.jarvisx --web-dir=www
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-      - uses: android-actions/setup-android@v3
+      - run: npm install
+      - run: npx cap init JarvisX com.satyam.jarvisx --web-dir=www
       - run: npx cap add android
       - run: npx cap sync android
       - run: chmod +x gradlew

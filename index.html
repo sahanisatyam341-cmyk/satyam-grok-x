@@ -38,11 +38,12 @@ label{display:block;color:var(--m);font-size:12px;margin:12px 0 4px}.row{display
 <div class="row" style="margin-top:10px"><span>👂 Hands-free ("Jarvis …")</span><button class="b" id="hf" style="width:60px">OFF</button></div>
 <div class="row" style="margin-top:10px"><span>🧠 Yaad ki hui baatein: <b id="mc">0</b></span><button class="b" id="mx" style="width:60px">🗑</button></div>
 <div class="row" style="margin-top:10px"><span>💬 Chat history</span><button class="b" id="cx" style="width:60px">🗑</button></div>
+<div class="row" style="margin-top:10px"><span>🔊 Awaaz test karo</span><button class="b" id="tst" style="width:60px">▶</button></div>
 <button class="b" id="sv" style="width:100%;margin-top:16px;height:46px">Save ✔</button></div></section>
 </main>
 <script>
 const $=i=>document.getElementById(i),K='jv2';
-let _tt=null;function showToast(m){const e=$('toast');e.textContent=m;e.style.display='block';clearTimeout(_tt);_tt=setTimeout(()=>e.style.display='none',3500)}
+let _tt=null;function showToast(m){const e=$('toast');e.textContent=m;e.style.display='block';clearTimeout(_tt);_tt=setTimeout(()=>e.style.display='none',6000)}
 const D={ek:'',ev:'',xk:'',xv:'eve',key:'',model:'openai/gpt-oss-20b',ep:'https://api.groq.com/openai/v1/chat/completions',nm:'Boss',ln:'mid',vo:true,chat:[],tasks:[],mem:[]};
 let S;try{S={...D,...JSON.parse(localStorage.getItem(K)||'{}')}}catch{S={...D}}
 const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch{}};
@@ -127,7 +128,16 @@ $('ta').onclick=()=>{const v=$('ti').value.trim();if(v){S.tasks.push({t:v,d:0});
 const cnt=()=>$('mc').textContent=S.mem.length;
 [['key','key'],['model','model'],['ep','ep'],['nm','nm'],['ln','ln'],['xk','xk'],['xv','xv'],['ek','ek'],['ev','ev']].forEach(([i,k])=>$(i).value=S[k]);cnt();
 const vo=()=>{$('vo').textContent=S.vo?'ON':'OFF';$('vo').classList.toggle('on',S.vo)};vo();$('vo').onclick=()=>{S.vo=!S.vo;if(!S.vo)speechSynthesis.cancel();save();vo()};
+$('tst').onclick=async()=>{
+ const s0={...S};
+ S.ek=$('ek').value.trim()||S.ek;S.ev=$('ev').value.trim()||S.ev;
+ if(!S.ek||!S.ev){showToast('Pehle ElevenLabs key aur voice ID daalo');return}
+ showToast('Test: ElevenLabs ko call ho raha hai…');
+ try{await speakEleven('Hello Boss, main Jarvis hoon. Awaaz test ho rahi hai.');showToast('Test OK: awaaz bheji gayi')}
+ catch(e){showToast('Test error: '+e.message)}
+};
 $('sv').onclick=()=>{[['key','key'],['model','model'],['ep','ep'],['nm','nm'],['ln','ln'],['xk','xk'],['xv','xv'],['ek','ek'],['ev','ev']].forEach(([i,k])=>S[k]=$(i).value.trim()||D[k]);save();st('Saved ✔');setTimeout(()=>st('Online • bolo '+S.nm),1500)};
 $('mx').onclick=()=>{S.mem=[];save();cnt()};$('cx').onclick=()=>{S.chat=[];save();$('feed').innerHTML=''};
 if('serviceWorker'in navigator&&0)0;
 </script></body></html>
+ 

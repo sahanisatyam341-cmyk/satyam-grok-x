@@ -33,7 +33,7 @@ label{display:block;color:var(--m);font-size:12px;margin:12px 0 4px}.row{display
 <section class="tab" id="set"><div class="pad" style="display:block">
 <label>API Key (Groq: gsk_… ) — sirf is phone me save hota hai</label><input id="key" type="password" placeholder="gsk_...">
 <label>Model</label><input id="model"><label>Endpoint</label><input id="ep">
-<label>xAI API Key (Grok voice) — sirf is phone me save hota hai</label><input id="xk" type="password" placeholder="xai-..."><label>Grok voice</label><select id="xv"><option value="eve">Eve</option><option value="ara">Ara</option><option value="rex">Rex</option><option value="sal">Sal</option><option value="leo">Leo</option></select><label>Boss ka naam</label><input id="nm"><label>Jawab ki length</label><select id="ln"><option value="short">Chhota</option><option value="mid">Balanced</option><option value="long">Detail</option></select>
+<label>ElevenLabs API Key (awaaz) — sirf is phone me save hota hai</label><input id="ek" type="password" placeholder="sk_..."><label>ElevenLabs Voice ID</label><input id="ev" placeholder="voice id yahan"><label>xAI API Key (Grok voice) — sirf is phone me save hota hai</label><input id="xk" type="password" placeholder="xai-..."><label>Grok voice</label><select id="xv"><option value="eve">Eve</option><option value="ara">Ara</option><option value="rex">Rex</option><option value="sal">Sal</option><option value="leo">Leo</option></select><label>Boss ka naam</label><input id="nm"><label>Jawab ki length</label><select id="ln"><option value="short">Chhota</option><option value="mid">Balanced</option><option value="long">Detail</option></select>
 <div class="row" style="margin-top:14px"><span>🔊 Awaaz me bolo</span><button class="b" id="vo" style="width:60px">ON</button></div>
 <div class="row" style="margin-top:10px"><span>👂 Hands-free ("Jarvis …")</span><button class="b" id="hf" style="width:60px">OFF</button></div>
 <div class="row" style="margin-top:10px"><span>🧠 Yaad ki hui baatein: <b id="mc">0</b></span><button class="b" id="mx" style="width:60px">🗑</button></div>
@@ -43,7 +43,7 @@ label{display:block;color:var(--m);font-size:12px;margin:12px 0 4px}.row{display
 <script>
 const $=i=>document.getElementById(i),K='jv2';
 let _tt=null;function showToast(m){const e=$('toast');e.textContent=m;e.style.display='block';clearTimeout(_tt);_tt=setTimeout(()=>e.style.display='none',3500)}
-const D={xk:'',xv:'eve',key:'',model:'openai/gpt-oss-20b',ep:'https://api.groq.com/openai/v1/chat/completions',nm:'Boss',ln:'mid',vo:true,chat:[],tasks:[],mem:[]};
+const D={ek:'',ev:'',xk:'',xv:'eve',key:'',model:'openai/gpt-oss-20b',ep:'https://api.groq.com/openai/v1/chat/completions',nm:'Boss',ln:'mid',vo:true,chat:[],tasks:[],mem:[]};
 let S;try{S={...D,...JSON.parse(localStorage.getItem(K)||'{}')}}catch{S={...D}}
 const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch{}};
 const orb=c=>$('orb').className='orb '+(c||''),st=t=>$('st').textContent=t;
@@ -61,9 +61,16 @@ async function speakXai(clean){
  const url=URL.createObjectURL(await r.blob());if(aud)aud.pause();aud=new Audio(url);
  aud.onplay=()=>orb('talk');aud.onended=()=>{orb(hf?'listen':'');URL.revokeObjectURL(url)};await aud.play();
 }
+async function speakEleven(clean){
+ const r=await fetch('https://api.elevenlabs.io/v1/text-to-speech/'+encodeURIComponent(S.ev),{method:'POST',headers:{'Content-Type':'application/json','xi-api-key':S.ek,'Accept':'audio/mpeg'},body:JSON.stringify({text:clean.slice(0,4000),model_id:'eleven_multilingual_v2'})});
+ if(!r.ok){let m='';try{m=(await r.text()).slice(0,120)}catch{}throw new Error('ElevenLabs '+r.status+' '+m)}
+ const url=URL.createObjectURL(await r.blob());if(aud)aud.pause();aud=new Audio(url);
+ aud.onplay=()=>orb('talk');aud.onended=()=>{orb(hf?'listen':'');URL.revokeObjectURL(url)};await aud.play();
+}
 function speak(t){
  const clean=t.replace(/[\u{1F000}-\u{1FFFF}*#_`]/gu,'');
  if(!S.vo){showToast('Awaaz OFF hai (Settings me ON karo)');return}
+ if(S.ek&&S.ev){showToast('Awaaz: ElevenLabs');speakEleven(clean).catch(e=>{showToast('ElevenLabs error: '+e.message);speakNative(clean)});return}
  const NTTS=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.TextToSpeech;
  showToast('Awaaz: '+(S.xk?'Grok':NTTS?'phone (native)':'web'));
  if(S.xk){speakXai(clean).catch(e=>{showToast('Grok error: '+e.message);speakNative(clean)});return}
@@ -118,9 +125,9 @@ function rt(){$('tl').innerHTML='';S.tasks.forEach((k,i)=>{const d=document.crea
 $('ta').onclick=()=>{const v=$('ti').value.trim();if(v){S.tasks.push({t:v,d:0});$('ti').value='';save();rt()}};rt();
 /* settings */
 const cnt=()=>$('mc').textContent=S.mem.length;
-[['key','key'],['model','model'],['ep','ep'],['nm','nm'],['ln','ln'],['xk','xk'],['xv','xv']].forEach(([i,k])=>$(i).value=S[k]);cnt();
+[['key','key'],['model','model'],['ep','ep'],['nm','nm'],['ln','ln'],['xk','xk'],['xv','xv'],['ek','ek'],['ev','ev']].forEach(([i,k])=>$(i).value=S[k]);cnt();
 const vo=()=>{$('vo').textContent=S.vo?'ON':'OFF';$('vo').classList.toggle('on',S.vo)};vo();$('vo').onclick=()=>{S.vo=!S.vo;if(!S.vo)speechSynthesis.cancel();save();vo()};
-$('sv').onclick=()=>{[['key','key'],['model','model'],['ep','ep'],['nm','nm'],['ln','ln'],['xk','xk'],['xv','xv']].forEach(([i,k])=>S[k]=$(i).value.trim()||D[k]);save();st('Saved ✔');setTimeout(()=>st('Online • bolo '+S.nm),1500)};
+$('sv').onclick=()=>{[['key','key'],['model','model'],['ep','ep'],['nm','nm'],['ln','ln'],['xk','xk'],['xv','xv'],['ek','ek'],['ev','ev']].forEach(([i,k])=>S[k]=$(i).value.trim()||D[k]);save();st('Saved ✔');setTimeout(()=>st('Online • bolo '+S.nm),1500)};
 $('mx').onclick=()=>{S.mem=[];save();cnt()};$('cx').onclick=()=>{S.chat=[];save();$('feed').innerHTML=''};
 if('serviceWorker'in navigator&&0)0;
 </script></body></html>
